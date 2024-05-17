@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # ========================================
+  # Joomla
+  # ========================================
+  joomla:
+    image: joomla:latest
+    container_name: joomla-app
+    restart: always
+    links:
+      - joomladb:mysql
+    ports:
+      - 8080:80
+    env_file:
+      - .env.docker
+    environment:
+      JOOMLA_DB_HOST: ${DB_HOST}
+      JOOMLA_DB_USER: ${DB_USER}
+      JOOMLA_DB_PASSWORD: ${DB_PASSWORD}
+      JOOMLA_DB_NAME: ${DB_NAME}
+    networks:
+      - joomla-network
+
+  # ========================================
+  # mysql
+  # ========================================
+  joomladb:
+    image: mysql:8.0
+    container_name: joomla-db
+    restart: always
+    env_file:
+      - .env.docker
+    environment:
+      MYSQL_ROOT_PASSWORD: "${DB_ROOT_PASSWORD}"
+      MYSQL_DATABASE: "${DB_NAME}"
+      MYSQL_USER: "${DB_USER}"
+      MYSQL_PASSWORD: "${DB_PASSWORD}"
+
+    # Redirection de ports
+    ports:
+      # La machine locale ouvre le port 3308 qui "pointe" vers le port 3306 du container
+      - 3306:3306
+    volumes:
+      # Stockage persistant de la base de données
+      - ./db_data:/var/lib/mysql
+    networks:
+      - joomla-network
+
+  # ========================================
+  # phpmyadmin
+  # ========================================
+  joomlapma:
+    image: phpmyadmin:latest
+    container_name: joomla-pma
+    restart: unless-stopped
+    links:
+      - joomladb:mysql
+    ports:
+      - 8181:80
+    env_file:
+      - .env.docker
+    # Variables d'environnement
+    # https://docs.phpmyadmin.net/en/latest/setup.html#docker-environment-variables
+    environment:
+      # A quel hôte
+      PMA_HOST: "${DB_HOST}"
+      PMA_PORT: "${DB_HOST_PORT}"
+      PMA_USER: "${DB_USER}"
+      PMA_PASSWORD: "${DB_PASSWORD}"
+      UPLOAD_LIMIT: 50M
+    networks:
+      - joomla-network
+
+networks:
+  joomla-network:
+    driver: bridge
