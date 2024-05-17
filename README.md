@@ -15,6 +15,8 @@ http://localhost:8080
 
 # Lancement de la stack
 
+`docker-compose up --env-file .env.docker -d`
+
 ---
 
 # Joomla
