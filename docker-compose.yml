@@ -19,6 +19,9 @@ services:
       JOOMLA_DB_USER: ${DB_USER}
       JOOMLA_DB_PASSWORD: ${DB_PASSWORD}
       JOOMLA_DB_NAME: ${DB_NAME}
+    # N'activez le volume qu'après l'installation!
+    volumes:
+        - ./joomla_data:/var/www/html
     networks:
       - joomla-network
 
